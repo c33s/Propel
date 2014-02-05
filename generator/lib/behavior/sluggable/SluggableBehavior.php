@@ -319,11 +319,27 @@ protected function makeSlugUnique(\$slug, \$separator = '" . $this->getParameter
         }
 
         $script .= "
-    }
+    }";
 
+	$platform = $this->getTable()->getDatabase()->getPlatform();
+	if ($platform instanceof SqlitePlatform)
+	{
+		$script .= "
+		\$con = Propel::getConnection(PortfolioItemI18nPeer::DATABASE_NAME, Propel::CONNECTION_READ);
+	
+		\$con->sqliteCreateFunction('regexp', function(\$pattern, \$value) 
+		{
+			mb_regex_encoding('UTF-8');
+			return (false !== mb_ereg(\$pattern, \$value)) ? 1 : 0;
+		});
+		";
+	}
+	
+	
+	$script .= "
      \$query = " . $this->builder->getStubQueryBuilder()->getClassname() . "::create('q')
     ";
-        $platform = $this->getTable()->getDatabase()->getPlatform();
+        
         if ($platform instanceof PgsqlPlatform) {
             $script .= "->where('q." . $this->getColumnForParameter('slug_column')->getPhpName() . " ' . (\$alreadyExists ? '~*' : '=') . ' ?', \$alreadyExists ? '^' . \$slug2 . '[0-9]+$' : \$slug2)";
         } elseif ($platform instanceof MssqlPlatform) {
