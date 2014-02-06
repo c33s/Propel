@@ -325,7 +325,8 @@ protected function makeSlugUnique(\$slug, \$separator = '" . $this->getParameter
 	if ($platform instanceof SqlitePlatform)
 	{
 		$script .= "
-		\$con = Propel::getConnection(PortfolioItemI18nPeer::DATABASE_NAME, Propel::CONNECTION_READ);
+		\$peer = self::PEER;
+		\$con = Propel::getConnection(\$peer::DATABASE_NAME, Propel::CONNECTION_READ);
 	
 		\$con->sqliteCreateFunction('regexp', function(\$pattern, \$value) 
 		{
